@@ -36,8 +36,9 @@ const QUESTIONS = {
                 name: "value",
                 message: `select`,
                 choices: [
-                    { title: "receive", value: "receive" },
-                    { title: "delete", value: "delete" },
+                    { title: "receive", value: "onlyReceive" },
+                    { title: "delete", value: "receiveAndDelete" },
+                    { title: "sendBatch", value: "sendMessageBatch" }
                 ],
                 hint: "- Space to select. Return to submit",
                 max: 2,
