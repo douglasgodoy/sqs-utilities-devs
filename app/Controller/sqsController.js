@@ -17,7 +17,8 @@ const Services = {
     },
 
     deleteQueues: (deleteObjects) => {
-        const sanitizeData = deleteObjects.map(({ ReceiptHandle }, key) =>
+        const objects = deleteObjects || [];
+        const sanitizeData = objects.map(({ ReceiptHandle }, key) =>
             Services.getDeleteObject(ReceiptHandle, key)
         );
 
@@ -38,6 +39,7 @@ const Services = {
             MaxNumberOfMessages: 10,
             MessageAttributeNames: ["All"],
         };
+
         try {
             const res = await sqs.receiveMessage(params).promise();
             return res.Messages;
@@ -49,7 +51,11 @@ const Services = {
     onlyReceive: async () => {
         try {
             const response = await Services.receive();
-            console.log(response);
+            if(!response) return console.log('nothing in queue');
+            const sanitizeData = response.map(obj => obj.Body);
+            console.log(sanitizeData);
+            console.log(`receive ${sanitizeData.length} messages`);
+            await Services.onlyReceive()
             return response;
         } catch (error) {
             return error;
@@ -57,15 +63,17 @@ const Services = {
     },
 
     receiveAndDelete: async (receive = true) => {
+        receive = false;
         const queues = receive
             ? await Services.onlyReceive()
             : await Services.receive();
 
-        console.log("deleting data...");
+        if (!queues) return console.log('nothing to delete');
         Services.deleteQueues(queues);
+        Services.receiveAndDelete()
     },
 
-    sendMessageBatch() {
+    sendMessageBatch:async () => {
         const messageObj = JSON.parse(process.env.ENTRIES) || 0;
         if (!messageObj.length) {
             console.log("empty entries");
@@ -80,13 +88,12 @@ const Services = {
             QueueUrl: Services.queue_url,
             Entries: entries,
         };
-
-        sqs.sendMessageBatch(requestParams, (err, data) => {
-            if (err) {
-                console.log(err.message);
-            }
-            console.log(data);
-        });
+        try {
+            const resultSend = await sqs.sendMessageBatch(requestParams).promise()
+            console.log(`send sucess ${resultSend.Successful.length} messages!`);
+        } catch (error) {
+            console.log(error);
+        }
     },
 
     getEntry(messageBody, key) {

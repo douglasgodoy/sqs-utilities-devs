@@ -1,6 +1,6 @@
 require("dotenv").config();
-const sqs = require("./app/lib/sqsController");
-const questions = require("./app/lib/promptController");
+const sqs = require("./app/Controller/sqsController");
+const questions = require("./app/Controller/promptController");
 /*setInterval(() => {
     sqs.receive();
 }, process.env.INTERVAL_WORKER);
@@ -10,8 +10,7 @@ const finish = () => {
     return false;
 };
 
-
-(async () => {
+const flow = async () => {
     const returnPrompt = (await questions.initial()).value || false;
 
     if (returnPrompt === "C") sqs.connect();
@@ -19,9 +18,13 @@ const finish = () => {
 
     const selectedType = await questions.configured();
     console.log(selectedType);
-    if (selectedType.value) await sqs[selectedType.value]();
-    //if (selectedType.value) sqs[selectedType.value]();
+    if (selectedType.value.length) await sqs[selectedType.value]();
+    
+    const more = await questions.more();
+    if (more.value) await flow();
+};
 
-    //sqs.receive()
+(async () => {
+    await flow();
     finish();
 })();

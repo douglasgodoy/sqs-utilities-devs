@@ -74,6 +74,17 @@ const QUESTIONS = {
 
         return await prompts(arrayQuestions);
     },
+
+    more:async () => {
+        
+        const question = {
+            type:'confirm',
+            message:'continue ?',
+            name:'value'
+        }
+        
+        return await prompts(question);
+    }
 };
 
 module.exports = QUESTIONS;
