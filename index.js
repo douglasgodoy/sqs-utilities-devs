@@ -17,7 +17,6 @@ const flow = async () => {
     else sqs.connect(await questions.manual());
 
     const selectedType = await questions.configured();
-    console.log(selectedType);
     if (selectedType.value.length) await sqs[selectedType.value]();
     
     const more = await questions.more();
