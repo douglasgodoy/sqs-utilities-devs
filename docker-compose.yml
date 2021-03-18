@@ -8,6 +8,8 @@ services:
         restart: unless-stopped
         container_name: sqs-utilities
         env_file: .env
+        stdin_open: true
+        tty: true
         environment:
             - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
@@ -16,4 +18,7 @@ services:
             - ENTRIES=$ENTRIES
         volumes:
             - .:/src
-        command: npm start
+            - ./node_modules:/node_modules
+        command: npm run start:dev
+volumes: 
+    node_modules:
